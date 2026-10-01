@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feeder Flexibility Engine — DISCOM Dashboard</title>
+<style>
+  :root {
+    --navy:#0F1E33; --amber:#E8A33D; --amber-deep:#B97A1F;
+    --bg:#F7F5F0; --card:#FFFFFF; --text:#1B2430; --text-muted:#5C6B7A;
+    --line:#E3E0D8; --green:#2E7D4F; --red:#C0432F; --yellow:#C79A1E;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+  .topbar{background:var(--navy);color:#fff;padding:16px 26px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;}
+  .topbar h1{font-size:17px;font-weight:600;}
+  .topbar .sub{font-size:12px;color:#B9C4D0;}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 50px;}
+  .section-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin:0 0 10px 2px;}
+  .feeder-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px;}
+  @media (max-width:760px){.feeder-row{grid-template-columns:repeat(3,1fr);}}
+  .feeder-tile{border-radius:8px;padding:10px 8px;text-align:center;border:1px solid var(--line);cursor:default;}
+  .feeder-tile.ok{background:#E9F4EC;border-color:#BFE0C8;}
+  .feeder-tile.watch{background:#FBF3DA;border-color:#EAD79A;}
+  .feeder-tile.alert{background:#FBE7E2;border-color:#EFB8AB;}
+  .feeder-tile .fname{font-size:11px;color:var(--text-muted);}
+  .feeder-tile .fstat{font-size:12px;font-weight:600;margin-top:2px;}
+  .feeder-tile.ok .fstat{color:var(--green);}
+  .feeder-tile.watch .fstat{color:var(--yellow);}
+  .feeder-tile.alert .fstat{color:var(--red);}
+
+  .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;}
+  @media (max-width:760px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;}
+  .status-row{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+  .status-label{font-size:12px;color:var(--text-muted);}
+  .status-value{font-size:20px;font-weight:600;margin-top:1px;}
+  .divider{height:1px;background:var(--line);margin:16px 0;}
+  .field-label{font-size:11.5px;color:var(--text-muted);margin-bottom:3px;}
+  .field-value{font-size:14.5px;font-weight:500;margin-bottom:12px;}
+  .why-box{background:#F4F6F5;border-radius:6px;padding:10px 12px;font-size:12.5px;color:var(--text-muted);margin-bottom:12px;}
+  .why-box b{color:var(--text);}
+  .action-box{background:#FBF3E4;border:1px solid #ECD6A8;border-radius:8px;padding:12px 14px;margin-top:2px;}
+  .action-box .field-label{color:var(--amber-deep);font-weight:600;}
+  .forecast-box{background:#EAF0FA;border:1px solid #C7D6EE;border-radius:8px;padding:10px 12px;font-size:12.5px;margin-top:12px;}
+  .forecast-box b{color:#1D4E8F;}
+  .metric-hero{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .metric-hero .num{font-size:36px;font-weight:600;color:var(--navy);}
+  .metric-hero .unit{font-size:13px;color:var(--text-muted);}
+  .metric-sub{font-size:12.5px;color:var(--text-muted);margin-top:6px;}
+  .metric-sub b{color:var(--green);font-weight:600;}
+  canvas{width:100% !important;height:190px !important;margin-top:8px;}
+  .loads{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+  .load-row{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-radius:6px;background:#F4F6F5;font-size:13px;}
+  .load-row.critical{background:#EAF4EC;}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:20px;}
+  .tag.on{background:#DCEEE1;color:var(--green);}
+  .tag.shed{background:#F6E3DE;color:var(--red);}
+  .stress-note{font-size:12px;color:var(--text-muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+  .stress-note b{color:var(--navy);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Feeder Flexibility Engine</h1>
+  <div class="sub">Neighbourhood A · 5 feeders · 50 households on Feeder 3</div>
+</div>
+
+<div class="wrap">
+
+  <div class="section-title">Feeder overview — 30-day average shortfall hrs/day</div>
+  <div class="feeder-row" style="grid-template-columns:repeat(5,1fr);">
+    <div class="feeder-tile ok"><div class="fname">Feeder 1</div><div class="fstat">0.33 hrs</div></div>
+    <div class="feeder-tile ok"><div class="fname">Feeder 2</div><div class="fstat">0.37 hrs</div></div>
+    <div class="feeder-tile watch"><div class="fname">Feeder 3</div><div class="fstat">0.60 hrs</div></div>
+    <div class="feeder-tile ok"><div class="fname">Feeder 4</div><div class="fstat">0.37 hrs</div></div>
+    <div class="feeder-tile ok"><div class="fname">Feeder 5</div><div class="fstat">0.47 hrs</div></div>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="status-row">
+        <div class="dot"></div>
+        <div>
+          <div class="status-label">Feeder 3 status</div>
+          <div class="status-value">Shortfall detected</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Cause</div>
+      <div class="field-value">Weather-driven dip (Sep 6, 11:00 AM)</div>
+
+      <div class="why-box">
+        <b>Why the system thinks this:</b> generation fell to 13.3 kW against 71.7 kW demand, an 81% drop during a daylight solar window — consistent with cloud cover rather than an equipment fault, which instead shows generation falling to 0 kW.
+      </div>
+
+      <div class="action-box">
+        <div class="field-label">Recommended action</div>
+        <div class="field-value" style="margin-bottom:0;">Dispatch shared battery — cover 30% of peak demand for 3 hours</div>
+      </div>
+
+      <div class="forecast-box">
+        <b>Advance warning:</b> next expected dip window — today, 7:45–8:30 PM (evening ramp-down). Battery pre-charge recommended by 7:15 PM.
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title" style="margin-bottom:8px;">Load status</div>
+      <div class="loads">
+        <div class="load-row critical"><span>Refrigeration</span><span class="tag on">On</span></div>
+        <div class="load-row critical"><span>Lighting</span><span class="tag on">On</span></div>
+        <div class="load-row critical"><span>Medical devices</span><span class="tag on">On</span></div>
+        <div class="load-row"><span>Water heating</span><span class="tag shed">Shed</span></div>
+        <div class="load-row"><span>Non-essential appliances</span><span class="tag shed">Shed</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field-label">Reliability improvement — network average</div>
+      <div class="metric-hero">
+        <span class="num">0.43</span>
+        <span class="unit">shortfall hrs / day</span>
+      </div>
+      <div class="metric-sub">vs 3.64 hrs baseline — <b>88.3% reduction</b></div>
+      <div class="metric-sub">Detection accuracy: <b>100%</b> (26 real events, 0 false alarms, 30-day simulation)</div>
+
+      <canvas id="genChart"></canvas>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Cost impact this month</div>
+      <div class="field-value">₹550 / household <span style="color:var(--text-muted);font-weight:400;">vs ₹11,800 genset baseline</span></div>
+
+      <div class="stress-note">
+        <b>Feeder stress note:</b> shifting the water-heating load out of the 6–9 PM peak reduces Feeder 3 loading during its most stressed window, helping lower technical losses on this segment.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+  const ctx = document.getElementById('genChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['12pm','2pm','4pm','6pm','7pm','8pm','10pm'],
+      datasets: [
+        {label:'Generation (kW)', data:[95,100,88,60,40,55,20], borderColor:'#E8A33D', backgroundColor:'transparent', tension:0.35, pointRadius:2},
+        {label:'Demand (kW)', data:[70,75,80,95,100,90,60], borderColor:'#0F1E33', backgroundColor:'transparent', tension:0.35, pointRadius:2}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10.5}}}},
+      scales:{
+        y:{ticks:{font:{size:10}}, grid:{color:'#EEEBE3'}},
+        x:{ticks:{font:{size:10}}, grid:{display:false}}
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
