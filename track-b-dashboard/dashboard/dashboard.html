@@ -107,7 +107,7 @@
       </div>
 
       <div class="forecast-box">
-        <b>Planned feature — advance warning:</b> next expected dip window — today, 7:45–8:30 PM (evening ramp-down). Battery pre-charge recommended by 7:15 PM. <i>(Forecast logic in development, not yet live on real data.)</i>
+        <b>Advance warning — now live:</b> forecast logic flagged 744 of 3,600 simulated hours (21%) as upcoming shortfall risk, 1-2 hours ahead of the event.
       </div>
 
       <div class="divider"></div>
@@ -135,8 +135,17 @@
 
       <div class="divider"></div>
 
+      <div class="field-label">Impact of each system layer (avg shortfall hrs/day)</div>
+      <canvas id="scenChart" style="height:150px !important;"></canvas>
+
+      <div class="divider"></div>
+
       <div class="field-label">Cost impact this month</div>
       <div class="field-value">₹550 / household <span style="color:var(--text-muted);font-weight:400;">vs ₹11,800 genset baseline</span></div>
+
+      <div class="stress-note">
+        <b>Equity finding:</b> critical-load shortfalls are not yet evenly spread across feeders — Feeder 5 saw about 2.6x more unserved critical load than Feeder 1. Cross-feeder load balancing is a planned refinement for the prototype phase.
+      </div>
 
       <div class="stress-note">
         <b>Feeder stress note:</b> shifting the water-heating load out of the 6–9 PM peak reduces Feeder 3 loading during its most stressed window, helping lower technical losses on this segment.
@@ -163,6 +172,27 @@
       plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10.5}}}},
       scales:{
         y:{ticks:{font:{size:10}}, grid:{color:'#EEEBE3'}},
+        x:{ticks:{font:{size:10}}, grid:{display:false}}
+      }
+    }
+  });
+
+  const ctx2 = document.getElementById('scenChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['No system', 'Load-shedding only', 'Full system'],
+      datasets: [{
+        label: 'Avg shortfall hrs/day',
+        data: [8.03, 3.64, 0.43],
+        backgroundColor: ['#C0432F', '#E8A33D', '#2E7D4F']
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{ticks:{font:{size:10}}, grid:{color:'#EEEBE3'}, beginAtZero:true},
         x:{ticks:{font:{size:10}}, grid:{display:false}}
       }
     }
