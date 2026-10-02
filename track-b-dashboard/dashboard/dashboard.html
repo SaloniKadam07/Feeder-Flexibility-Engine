@@ -18,6 +18,14 @@
   .topbar .sub{font-size:12px;color:#B9C4D0;}
   .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 50px;}
   .section-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin:0 0 10px 2px;}
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+  .stat-card{background:var(--navy);border-radius:10px;padding:16px 10px;text-align:center;}
+  .stat-num{font-size:26px;font-weight:700;color:var(--amber);}
+  .stat-lbl{font-size:11px;color:#C3CDD8;margin-top:3px;}
+  @media (max-width:500px){.stat-num{font-size:20px;}.stat-strip{gap:8px;}}
+  .legend-row{display:flex;gap:18px;justify-content:center;margin-top:8px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);font-weight:600;}
+  .legend-dot{width:12px;height:12px;border-radius:3px;flex:none;}
   .feeder-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px;}
   @media (max-width:760px){.feeder-row{grid-template-columns:repeat(3,1fr);}}
   .feeder-tile{border-radius:8px;padding:10px 8px;text-align:center;border:1px solid var(--line);cursor:default;}
@@ -52,7 +60,8 @@
   .metric-hero .unit{font-size:13px;color:var(--text-muted);}
   .metric-sub{font-size:12.5px;color:var(--text-muted);margin-top:6px;}
   .metric-sub b{color:var(--green);font-weight:600;}
-  canvas{width:100% !important;height:190px !important;margin-top:8px;}
+  .chart-box{background:#FBFAF7;border:1px solid var(--line);border-radius:8px;padding:12px 10px 6px;margin-top:8px;}
+  canvas{width:100% !important;height:220px !important;}
   .loads{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
   .load-row{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-radius:6px;background:#F4F6F5;font-size:13px;}
   .load-row.critical{background:#EAF4EC;}
@@ -71,6 +80,12 @@
 </div>
 
 <div class="wrap">
+
+  <div class="stat-strip">
+    <div class="stat-card"><div class="stat-num">88.3%</div><div class="stat-lbl">Shortfall reduction</div></div>
+    <div class="stat-card"><div class="stat-num">95%</div><div class="stat-lbl">Cheaper than diesel</div></div>
+    <div class="stat-card"><div class="stat-num">100%</div><div class="stat-lbl">Detection accuracy</div></div>
+  </div>
 
   <div class="section-title">Feeder overview — 30-day average shortfall hrs/day</div>
   <div class="feeder-row" style="grid-template-columns:repeat(5,1fr);">
@@ -112,7 +127,7 @@
 
       <div class="divider"></div>
 
-      <div class="section-title" style="margin-bottom:8px;">Load status</div>
+      <div class="section-title" style="margin-bottom:8px;">Load status — during 11:00 AM event</div>
       <div class="loads">
         <div class="load-row critical"><span>Refrigeration</span><span class="tag on">On</span></div>
         <div class="load-row critical"><span>Lighting</span><span class="tag on">On</span></div>
@@ -131,12 +146,23 @@
       <div class="metric-sub">vs 3.64 hrs baseline — <b>88.3% reduction</b></div>
       <div class="metric-sub">Detection accuracy: <b>100%</b> (26 real events, 0 false alarms, 30-day simulation)</div>
 
-      <canvas id="genChart"></canvas>
+      <div class="divider"></div>
+
+      <div class="field-label">Generation vs demand — Feeder 3, Sep 6 (actual event day)</div>
+      <div class="chart-box">
+        <div class="legend-row">
+          <div class="legend-item"><span class="legend-dot" style="background:#E8A33D;"></span>Generation (kW)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#0F1E33;"></span>Demand (kW)</div>
+        </div>
+        <canvas id="genChart"></canvas>
+      </div>
 
       <div class="divider"></div>
 
       <div class="field-label">Impact of each system layer (avg shortfall hrs/day)</div>
-      <canvas id="scenChart" style="height:150px !important;"></canvas>
+      <div class="chart-box">
+        <canvas id="scenChart" style="height:190px !important;"></canvas>
+      </div>
 
       <div class="divider"></div>
 
@@ -153,26 +179,62 @@
     </div>
 
   </div>
+
+  <div class="card" style="margin-top:18px;">
+    <div class="section-title" style="margin-bottom:10px;">Quick glossary</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px;color:var(--text-muted);">
+      <div><b style="color:var(--text);">Critical load</b> — refrigeration, lighting, medical devices; kept on first</div>
+      <div><b style="color:var(--text);">Shortfall hour</b> — an hour where demand exceeds available supply</div>
+      <div><b style="color:var(--text);">Feeder</b> — one local distribution line serving ~50 households</div>
+      <div><b style="color:var(--text);">Dispatch</b> — the decision to discharge the shared battery</div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+  // value-label plugin for bar chart (draws the number above each bar)
+  const valueLabel = {
+    id: 'valueLabel',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds, i) => {
+        chart.getDatasetMeta(i).data.forEach((bar, idx) => {
+          ctx.save();
+          ctx.font = '600 12px -apple-system, sans-serif';
+          ctx.fillStyle = '#1B2430';
+          ctx.textAlign = 'center';
+          ctx.fillText(ds.data[idx], bar.x, bar.y - 8);
+          ctx.restore();
+        });
+      });
+    }
+  };
+
   const ctx = document.getElementById('genChart').getContext('2d');
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['12pm','2pm','4pm','6pm','7pm','8pm','10pm'],
+      labels: ['12am','3am','6am','9am','11am','1pm','3pm','5pm','7pm','9pm','11pm'],
       datasets: [
-        {label:'Generation (kW)', data:[95,100,88,60,40,55,20], borderColor:'#E8A33D', backgroundColor:'transparent', tension:0.35, pointRadius:2},
-        {label:'Demand (kW)', data:[70,75,80,95,100,90,60], borderColor:'#0F1E33', backgroundColor:'transparent', tension:0.35, pointRadius:2}
+        {label:'Generation (kW)', data:[0,0,0,46.4,13.31,13.19,29.95,17.75,0,0,0], borderColor:'#E8A33D', backgroundColor:'rgba(232,163,61,0.12)', fill:true, tension:0.3, pointRadius:0, borderWidth:2.5},
+        {label:'Demand (kW)', data:[62.68,59.67,62.10,83.90,71.74,62.04,58.38,67.99,90.38,87.91,66.17], borderColor:'#0F1E33', backgroundColor:'transparent', tension:0.3, pointRadius:0, borderWidth:2.5}
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10.5}}}},
+      layout:{padding:{top:10, bottom:2, left:2, right:8}},
+      plugins:{ legend:{display:false} },
       scales:{
-        y:{ticks:{font:{size:10}}, grid:{color:'#EEEBE3'}},
-        x:{ticks:{font:{size:10}}, grid:{display:false}}
+        y:{
+          ticks:{font:{size:11}, padding:6, color:'#5C6B7A'},
+          grid:{color:'#EEEBE3'},
+          title:{display:true, text:'Power (kW)', font:{size:11, weight:'600'}, color:'#5C6B7A'}
+        },
+        x:{
+          ticks:{font:{size:10.5}, maxRotation:0, autoSkip:true, maxTicksLimit:6, color:'#5C6B7A'},
+          grid:{display:false}
+        }
       }
     }
   });
@@ -181,21 +243,33 @@
   new Chart(ctx2, {
     type: 'bar',
     data: {
-      labels: ['No system', 'Load-shedding only', 'Full system'],
+      labels: ['No system', 'Shedding only', 'Full system'],
       datasets: [{
         label: 'Avg shortfall hrs/day',
         data: [8.03, 3.64, 0.43],
-        backgroundColor: ['#C0432F', '#E8A33D', '#2E7D4F']
+        backgroundColor: ['#C0432F', '#E8A33D', '#2E7D4F'],
+        borderRadius: 5,
+        maxBarThickness: 70
       }]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:22}},
       plugins:{legend:{display:false}},
       scales:{
-        y:{ticks:{font:{size:10}}, grid:{color:'#EEEBE3'}, beginAtZero:true},
-        x:{ticks:{font:{size:10}}, grid:{display:false}}
+        y:{
+          ticks:{font:{size:11}, padding:6, color:'#5C6B7A'},
+          grid:{color:'#EEEBE3'},
+          beginAtZero:true, max:9,
+          title:{display:true, text:'Shortfall hrs/day', font:{size:11, weight:'600'}, color:'#5C6B7A'}
+        },
+        x:{
+          ticks:{font:{size:11}, color:'#5C6B7A'},
+          grid:{display:false}
+        }
       }
-    }
+    },
+    plugins: [valueLabel]
   });
 </script>
 
