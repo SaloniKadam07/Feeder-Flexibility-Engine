@@ -19,6 +19,23 @@ A connected pipeline: simulated feeder data → anomaly classification (weather 
 - Advance-warning forecasting flagged 21% of simulated hours ahead of a shortfall
 - **Honest limitation:** critical-load shortfalls are not yet evenly distributed across feeders (Feeder 5 saw ~2.6x more unserved critical load than Feeder 1) — a planned refinement for the prototype phase
 
+## How to run
+
+### Track A (simulation)
+```bash
+cd track-a-simulation
+pip install pandas numpy
+python 01_dataset_generator.py
+python 02_anomaly_classifier.py
+python 03_dispatch_and_metrics.py
+python 04_generate_plots.py
+python 05_enhancements.py
+```
+Each script reads the previous step's output and writes its own CSV into `data/`.
+
+### Track B (dashboard)
+Open `track-b-dashboard/dashboard/dashboard.html` directly in any browser — no build step required. Live version: https://feeder-flexibility-engine-fc0776.netlify.app
+
 ## Team
 - **Saloni Kadam** — DISCOM dashboard, unit economics, ownership/O&M model, architecture design
 - **Sadeem Khan** — Data simulation, anomaly detection, dispatch logic, reliability metrics
