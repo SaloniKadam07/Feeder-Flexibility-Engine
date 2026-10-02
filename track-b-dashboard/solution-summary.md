@@ -26,6 +26,7 @@ Critical-load shortfalls are not yet evenly distributed across feeders (Feeder 5
 
 ## Team
 **Saloni Kadam** — DISCOM dashboard, economics, O&M model, architecture
+
 **Sadeem Khan** — Simulation, detection, dispatch logic
 
 ## Links
