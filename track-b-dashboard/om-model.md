@@ -33,3 +33,6 @@ This is a known gap, not a resolved claim. Addressing cross-feeder equity — fo
 | Baseline cost (diesel genset) | ~₹11,800/household/month |
 | Savings | ~95% |
 | Fair access status | Fair by load type; not yet fair across feeders (known limitation) |
+
+## Known Risks / What We'd Validate First
+Our most fragile assumption is the 3 hrs/day genset baseline — real household backup behavior varies by season, income, and generator access, and our simulation uses one fixed average. In a real pilot, the first thing we'd measure is actual household backup usage patterns over at least one full month, including monsoon, to confirm whether our affordability comparison (₹550 vs ₹11,800) holds at the extremes, not just the average case.
