@@ -70,16 +70,44 @@
   .tag.shed{background:#F6E3DE;color:var(--red);}
   .stress-note{font-size:12px;color:var(--text-muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
   .stress-note b{color:var(--navy);}
+
+  .live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(46,125,79,0.18);color:#8FE0AC;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.3px;}
+  .live-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80;animation:pulse 1.6s infinite;}
+  .updated-ts{font-size:11px;color:#8A97A5;margin-top:2px;}
+  .topbar-right{text-align:right;}
+  .download-btn{background:var(--navy);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .download-btn:hover{background:#16283F;}
+  .download-wrap{text-align:right;margin:-8px 0 16px;}
+  @media print{
+    .download-wrap{display:none;}
+    body{background:#fff;}
+  }
+  .wrap, .topbar{animation:fadeIn 0.5s ease both;}
+  .stat-card, .feeder-tile, .card{animation:fadeInUp 0.5s ease both;}
+  .stat-card:nth-child(2){animation-delay:0.05s;}
+  .stat-card:nth-child(3){animation-delay:0.1s;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h1>Feeder Flexibility Engine</h1>
-  <div class="sub">Neighbourhood A · 5 feeders · 50 households on Feeder 3</div>
+  <div>
+    <h1>Feeder Flexibility Engine</h1>
+    <div class="sub">Neighbourhood A · 5 feeders · 50 households on Feeder 3</div>
+  </div>
+  <div class="topbar-right">
+    <span class="live-badge"><span class="live-dot"></span>LIVE DEMO</span>
+    <div class="updated-ts" id="updatedTs"></div>
+  </div>
 </div>
 
 <div class="wrap">
+
+  <div class="download-wrap">
+    <button class="download-btn" onclick="window.print()">⬇ Download Report</button>
+  </div>
 
   <div class="stat-strip">
     <div class="stat-card"><div class="stat-num">88.3%</div><div class="stat-lbl">Shortfall reduction</div></div>
@@ -89,36 +117,37 @@
 
   <div class="section-title">Feeder overview — 30-day average shortfall hrs/day</div>
   <div class="feeder-row" style="grid-template-columns:repeat(5,1fr);">
-    <div class="feeder-tile ok"><div class="fname">Feeder 1</div><div class="fstat">0.33 hrs</div></div>
-    <div class="feeder-tile ok"><div class="fname">Feeder 2</div><div class="fstat">0.37 hrs</div></div>
-    <div class="feeder-tile watch"><div class="fname">Feeder 3</div><div class="fstat">0.60 hrs</div></div>
-    <div class="feeder-tile ok"><div class="fname">Feeder 4</div><div class="fstat">0.37 hrs</div></div>
-    <div class="feeder-tile ok"><div class="fname">Feeder 5</div><div class="fstat">0.47 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(1)" style="cursor:pointer;"><div class="fname">Feeder 1</div><div class="fstat">0.33 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(2)" style="cursor:pointer;"><div class="fname">Feeder 2</div><div class="fstat">0.37 hrs</div></div>
+    <div class="feeder-tile watch" onclick="selectFeeder(3)" style="cursor:pointer;" id="tile-3"><div class="fname">Feeder 3</div><div class="fstat">0.60 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(4)" style="cursor:pointer;"><div class="fname">Feeder 4</div><div class="fstat">0.37 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(5)" style="cursor:pointer;"><div class="fname">Feeder 5</div><div class="fstat">0.47 hrs</div></div>
   </div>
+  <div style="font-size:11px;color:var(--text-muted);text-align:center;margin:-14px 0 20px;">Click any feeder tile to view its detail card below</div>
 
   <div class="grid">
 
     <div class="card">
       <div class="status-row">
-        <div class="dot"></div>
+        <div class="dot" id="statusDot"></div>
         <div>
-          <div class="status-label">Feeder 3 status</div>
-          <div class="status-value">Shortfall detected</div>
+          <div class="status-label" id="statusLabel">Feeder 3 status</div>
+          <div class="status-value" id="statusValue">Shortfall detected</div>
         </div>
       </div>
 
       <div class="divider"></div>
 
       <div class="field-label">Cause</div>
-      <div class="field-value">Weather-driven dip (Sep 6, 11:00 AM)</div>
+      <div class="field-value" id="causeValue">Weather-driven dip (Sep 6, 11:00 AM)</div>
 
-      <div class="why-box">
+      <div class="why-box" id="whyBox">
         <b>Why the system thinks this:</b> generation fell to 13.3 kW against 71.7 kW demand, an 81% drop during a daylight solar window — consistent with cloud cover rather than an equipment fault, which instead shows generation falling to 0 kW.
       </div>
 
       <div class="action-box">
         <div class="field-label">Recommended action</div>
-        <div class="field-value" style="margin-bottom:0;">Dispatch shared battery — cover 30% of peak demand for 3 hours</div>
+        <div class="field-value" style="margin-bottom:0;" id="actionValue">Dispatch shared battery — cover 30% of peak demand for 3 hours</div>
       </div>
 
       <div class="forecast-box">
@@ -271,6 +300,42 @@
     },
     plugins: [valueLabel]
   });
+
+  // Last-updated timestamp
+  document.getElementById('updatedTs').textContent =
+    'Last updated: ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+
+  // Click-to-expand feeder tiles
+  const feederData = {
+    1: {hrs:'0.33 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'},
+    2: {hrs:'0.37 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'},
+    3: {hrs:'0.60 hrs', status:'Shortfall detected', statusClass:'', dotColor:'#C0432F',
+        cause:'Weather-driven dip (Sep 6, 11:00 AM)',
+        why:'Generation fell to 13.3 kW against 71.7 kW demand, an 81% drop during a daylight solar window — consistent with cloud cover rather than an equipment fault, which instead shows generation falling to 0 kW.',
+        action:'Dispatch shared battery — cover 30% of peak demand for 3 hours'},
+    4: {hrs:'0.37 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'},
+    5: {hrs:'0.47 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'}
+  };
+
+  function selectFeeder(id) {
+    const d = feederData[id];
+    document.getElementById('statusLabel').textContent = 'Feeder ' + id + ' status';
+    document.getElementById('statusValue').textContent = d.status;
+    document.getElementById('statusDot').style.background = d.dotColor;
+    document.getElementById('causeValue').textContent = d.cause;
+    document.getElementById('whyBox').innerHTML = '<b>Why the system thinks this:</b> ' + d.why;
+    document.getElementById('actionValue').textContent = d.action;
+    document.querySelectorAll('.feeder-tile').forEach(t => t.style.outline = 'none');
+    document.querySelectorAll('.feeder-tile')[id-1].style.outline = '2px solid ' + d.dotColor;
+  }
 </script>
 
 </body>
