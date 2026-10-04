@@ -18,21 +18,4 @@ We considered three ownership models for the shared battery: a neighbourhood com
 ## Pricing
 - A flat fee of ₹550/household/month is added to each household's existing electricity bill.
 - This replaces the ~₹11,800/household/month households currently spend on diesel generator fuel and upkeep — a 95% reduction.
-- No new payment infrastructure is required, since billing already runs through the DISCOM.
-
-## Fair Access — Honest Finding
-Our dispatch rules currently prioritise critical loads **by load type** (critical vs flexible) but do not yet balance shortfalls **evenly across feeders**. In our 30-day simulation, Feeder 5 experienced roughly 2.6x more unserved critical load than Feeder 1.
-
-This is a known gap, not a resolved claim. Addressing cross-feeder equity — for example through load-balancing rules that account for each feeder's historical shortfall burden — is a planned refinement for the prototype phase (Oct 11–Nov 22).
-
-## Summary
-| Aspect | Model |
-|---|---|
-| Operator | DISCOM |
-| Billing | Flat ₹550/household/month, via existing electricity bill |
-| Baseline cost (diesel genset) | ~₹11,800/household/month |
-| Savings | ~95% |
-| Fair access status | Fair by load type; not yet fair across feeders (known limitation) |
-
-## Known Risks / What We'd Validate First
-Our most fragile assumption is the 3 hrs/day genset baseline — real household backup behavior varies by season, income, and generator access, and our simulation uses one fixed average. In a real pilot, the first thing we'd measure is actual household backup usage patterns over at least one full month, including monsoon, to confirm whether our affordability comparison (₹550 vs ₹11,800) holds at the extremes, not just the average case.
+- No new payment infrastructure is
