@@ -6,7 +6,7 @@
 Solar and wind generation drops unpredictably with clouds, nightfall and monsoon weather. Low-income urban and peri-urban neighbourhoods are hit hardest, currently relying on diesel generators costing roughly ₹11,800/household/month.
 
 ## Our Solution
-A software pipeline for a 5-feeder, 50-household neighbourhood network: detects shortfalls, classifies the cause (weather dip vs equipment fault), prioritises critical loads, dispatches a shared battery, and alerts the DISCOM with a recommended action.
+A software pipeline for a 5-feeder, 50-household neighbourhood network: forecasts upcoming shortfalls 1-2 hours ahead, detects and classifies the cause (weather dip vs equipment fault), prioritises critical loads, dispatches a shared battery, and alerts the DISCOM with a recommended action.
 
 ## Key Results
 
@@ -14,7 +14,7 @@ A software pipeline for a 5-feeder, 50-household neighbourhood network: detects 
 |---|---|
 | Shortfall hours reduced | 3.64 → 0.43 hrs/day/feeder (**88.3%**) |
 | Detection accuracy | **100%** (26 real events, 0 false alarms) |
-| Cost per household | ₹550/month vs ₹11,800/month (**95% cheaper**) |
+| Cost per household | ₹550/month vs ₹11,800/month (**95% cheaper**, holds above 90% under sensitivity testing) |
 | Forecast coverage | 21% of hours flagged 1-2 hrs ahead |
 | 3-scenario comparison | No system: 8.03 hrs → Shedding only: 3.64 hrs → Full system: 0.43 hrs |
 
@@ -25,9 +25,8 @@ The DISCOM operates the shared battery directly, billing a flat ₹550/household
 Critical-load shortfalls are not yet evenly distributed across feeders (Feeder 5 saw ~2.6x more unserved critical load than Feeder 1) — a planned refinement for the prototype phase.
 
 ## Team
-**Saloni Kadam** — DISCOM dashboard, economics, O&M model, architecture
-
-**Sadeem Khan** — Simulation, detection, dispatch logic
+- **Saloni Kadam** — DISCOM dashboard, economics, O&M model, architecture
+- **Sadeem Khan** — Simulation, detection, dispatch logic
 
 ## Links
 - Live dashboard: https://feeder-flexibility-engine-fc0776.netlify.app
