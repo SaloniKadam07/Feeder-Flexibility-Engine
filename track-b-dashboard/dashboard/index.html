@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feeder Flexibility Engine — DISCOM Dashboard</title>
+<style>
+  :root {
+    --navy:#0F1E33; --amber:#E8A33D; --amber-deep:#B97A1F;
+    --bg:#F7F5F0; --card:#FFFFFF; --text:#1B2430; --text-muted:#5C6B7A;
+    --line:#E3E0D8; --green:#2E7D4F; --red:#C0432F; --yellow:#C79A1E;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+  .topbar{background:var(--navy);color:#fff;padding:16px 26px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;}
+  .topbar h1{font-size:17px;font-weight:600;}
+  .topbar .sub{font-size:12px;color:#B9C4D0;}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 18px 50px;}
+  .section-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin:0 0 10px 2px;}
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+  .stat-card{background:var(--navy);border-radius:10px;padding:16px 10px;text-align:center;}
+  .stat-num{font-size:26px;font-weight:700;color:var(--amber);}
+  .stat-lbl{font-size:11px;color:#C3CDD8;margin-top:3px;}
+  @media (max-width:500px){.stat-num{font-size:20px;}.stat-strip{gap:8px;}}
+  .legend-row{display:flex;gap:18px;justify-content:center;margin-top:8px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);font-weight:600;}
+  .legend-dot{width:12px;height:12px;border-radius:3px;flex:none;}
+  .feeder-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px;}
+  @media (max-width:760px){.feeder-row{grid-template-columns:repeat(3,1fr);}}
+  .feeder-tile{border-radius:8px;padding:10px 8px;text-align:center;border:1px solid var(--line);cursor:default;}
+  .feeder-tile.ok{background:#E9F4EC;border-color:#BFE0C8;}
+  .feeder-tile.watch{background:#FBF3DA;border-color:#EAD79A;}
+  .feeder-tile.alert{background:#FBE7E2;border-color:#EFB8AB;}
+  .feeder-tile .fname{font-size:11px;color:var(--text-muted);}
+  .feeder-tile .fstat{font-size:12px;font-weight:600;margin-top:2px;}
+  .feeder-tile.ok .fstat{color:var(--green);}
+  .feeder-tile.watch .fstat{color:var(--yellow);}
+  .feeder-tile.alert .fstat{color:var(--red);}
+
+  .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;}
+  @media (max-width:760px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;}
+  .status-row{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+  .status-label{font-size:12px;color:var(--text-muted);}
+  .status-value{font-size:20px;font-weight:600;margin-top:1px;}
+  .divider{height:1px;background:var(--line);margin:16px 0;}
+  .field-label{font-size:11.5px;color:var(--text-muted);margin-bottom:3px;}
+  .field-value{font-size:14.5px;font-weight:500;margin-bottom:12px;}
+  .why-box{background:#F4F6F5;border-radius:6px;padding:10px 12px;font-size:12.5px;color:var(--text-muted);margin-bottom:12px;}
+  .why-box b{color:var(--text);}
+  .action-box{background:#FBF3E4;border:1px solid #ECD6A8;border-radius:8px;padding:12px 14px;margin-top:2px;}
+  .action-box .field-label{color:var(--amber-deep);font-weight:600;}
+  .forecast-box{background:#EAF0FA;border:1px solid #C7D6EE;border-radius:8px;padding:10px 12px;font-size:12.5px;margin-top:12px;}
+  .forecast-box b{color:#1D4E8F;}
+  .metric-hero{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .metric-hero .num{font-size:36px;font-weight:600;color:var(--navy);}
+  .metric-hero .unit{font-size:13px;color:var(--text-muted);}
+  .metric-sub{font-size:12.5px;color:var(--text-muted);margin-top:6px;}
+  .metric-sub b{color:var(--green);font-weight:600;}
+  .chart-box{background:#FBFAF7;border:1px solid var(--line);border-radius:8px;padding:12px 10px 6px;margin-top:8px;}
+  canvas{width:100% !important;height:220px !important;}
+  .loads{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+  .load-row{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-radius:6px;background:#F4F6F5;font-size:13px;}
+  .load-row.critical{background:#EAF4EC;}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:20px;}
+  .tag.on{background:#DCEEE1;color:var(--green);}
+  .tag.shed{background:#F6E3DE;color:var(--red);}
+  .stress-note{font-size:12px;color:var(--text-muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+  .stress-note b{color:var(--navy);}
+
+  .live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(46,125,79,0.18);color:#8FE0AC;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.3px;}
+  .live-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80;animation:pulse 1.6s infinite;}
+  .updated-ts{font-size:11px;color:#8A97A5;margin-top:2px;}
+  .topbar-right{text-align:right;}
+  .download-btn{background:var(--navy);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .download-btn:hover{background:#16283F;}
+  .download-wrap{text-align:right;margin:-8px 0 16px;}
+  @media print{
+    .download-wrap{display:none;}
+    body{background:#fff;}
+  }
+  .wrap, .topbar{animation:fadeIn 0.5s ease both;}
+  .stat-card, .feeder-tile, .card{animation:fadeInUp 0.5s ease both;}
+  .stat-card:nth-child(2){animation-delay:0.05s;}
+  .stat-card:nth-child(3){animation-delay:0.1s;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Feeder Flexibility Engine</h1>
+    <div class="sub">Neighbourhood A · 5 feeders · 50 households on Feeder 3</div>
+  </div>
+  <div class="topbar-right">
+    <span class="live-badge"><span class="live-dot"></span>LIVE DEMO</span>
+    <div class="updated-ts" id="updatedTs"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="download-wrap">
+    <button class="download-btn" onclick="window.print()">⬇ Download Report</button>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat-card"><div class="stat-num">88.3%</div><div class="stat-lbl">Shortfall reduction</div></div>
+    <div class="stat-card"><div class="stat-num">95%</div><div class="stat-lbl">Cheaper than diesel</div></div>
+    <div class="stat-card"><div class="stat-num">100%</div><div class="stat-lbl">Detection accuracy</div></div>
+  </div>
+
+  <div class="section-title">Feeder overview — 30-day average shortfall hrs/day</div>
+  <div class="feeder-row" style="grid-template-columns:repeat(5,1fr);">
+    <div class="feeder-tile ok" onclick="selectFeeder(1)" style="cursor:pointer;"><div class="fname">Feeder 1</div><div class="fstat">0.33 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(2)" style="cursor:pointer;"><div class="fname">Feeder 2</div><div class="fstat">0.37 hrs</div></div>
+    <div class="feeder-tile watch" onclick="selectFeeder(3)" style="cursor:pointer;" id="tile-3"><div class="fname">Feeder 3</div><div class="fstat">0.60 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(4)" style="cursor:pointer;"><div class="fname">Feeder 4</div><div class="fstat">0.37 hrs</div></div>
+    <div class="feeder-tile ok" onclick="selectFeeder(5)" style="cursor:pointer;"><div class="fname">Feeder 5</div><div class="fstat">0.47 hrs</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--text-muted);text-align:center;margin:-14px 0 20px;">Click any feeder tile to view its detail card below</div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="status-row">
+        <div class="dot" id="statusDot"></div>
+        <div>
+          <div class="status-label" id="statusLabel">Feeder 3 status</div>
+          <div class="status-value" id="statusValue">Shortfall detected</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Cause</div>
+      <div class="field-value" id="causeValue">Weather-driven dip (Sep 6, 11:00 AM)</div>
+
+      <div class="why-box" id="whyBox">
+        <b>Why the system thinks this:</b> generation fell to 13.3 kW against 71.7 kW demand, an 81% drop during a daylight solar window — consistent with cloud cover rather than an equipment fault, which instead shows generation falling to 0 kW.
+      </div>
+
+      <div class="action-box">
+        <div class="field-label">Recommended action</div>
+        <div class="field-value" style="margin-bottom:0;" id="actionValue">Dispatch shared battery — cover 30% of peak demand for 3 hours</div>
+      </div>
+
+      <div class="forecast-box">
+        <b>Advance warning — now live:</b> forecast logic flagged 744 of 3,600 simulated hours (21%) as upcoming shortfall risk, 1-2 hours ahead of the event.
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title" style="margin-bottom:8px;">Load status — during 11:00 AM event</div>
+      <div class="loads">
+        <div class="load-row critical"><span>Refrigeration</span><span class="tag on">On</span></div>
+        <div class="load-row critical"><span>Lighting</span><span class="tag on">On</span></div>
+        <div class="load-row critical"><span>Medical devices</span><span class="tag on">On</span></div>
+        <div class="load-row"><span>Water heating</span><span class="tag shed">Shed</span></div>
+        <div class="load-row"><span>Non-essential appliances</span><span class="tag shed">Shed</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field-label">Reliability improvement — network average</div>
+      <div class="metric-hero">
+        <span class="num">0.43</span>
+        <span class="unit">shortfall hrs / day</span>
+      </div>
+      <div class="metric-sub">vs 3.64 hrs baseline — <b>88.3% reduction</b></div>
+      <div class="metric-sub">Detection accuracy: <b>100%</b> (26 real events, 0 false alarms, 30-day simulation)</div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Generation vs demand — Feeder 3, Sep 6 (actual event day)</div>
+      <div class="chart-box">
+        <div class="legend-row">
+          <div class="legend-item"><span class="legend-dot" style="background:#E8A33D;"></span>Generation (kW)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#0F1E33;"></span>Demand (kW)</div>
+        </div>
+        <canvas id="genChart"></canvas>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Impact of each system layer (avg shortfall hrs/day)</div>
+      <div class="chart-box">
+        <canvas id="scenChart" style="height:190px !important;"></canvas>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-label">Cost impact this month</div>
+      <div class="field-value">₹550 / household <span style="color:var(--text-muted);font-weight:400;">vs ₹11,800 genset baseline</span></div>
+
+      <div class="stress-note">
+        <b>Equity finding:</b> critical-load shortfalls are not yet evenly spread across feeders — Feeder 5 saw about 2.6x more unserved critical load than Feeder 1. Cross-feeder load balancing is a planned refinement for the prototype phase.
+      </div>
+
+      <div class="stress-note">
+        <b>Feeder stress note:</b> shifting the water-heating load out of the 6–9 PM peak reduces Feeder 3 loading during its most stressed window, helping lower technical losses on this segment.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <div class="section-title" style="margin-bottom:10px;">Quick glossary</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12.5px;color:var(--text-muted);">
+      <div><b style="color:var(--text);">Critical load</b> — refrigeration, lighting, medical devices; kept on first</div>
+      <div><b style="color:var(--text);">Shortfall hour</b> — an hour where demand exceeds available supply</div>
+      <div><b style="color:var(--text);">Feeder</b> — one local distribution line serving ~50 households</div>
+      <div><b style="color:var(--text);">Dispatch</b> — the decision to discharge the shared battery</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+  // value-label plugin for bar chart (draws the number above each bar)
+  const valueLabel = {
+    id: 'valueLabel',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds, i) => {
+        chart.getDatasetMeta(i).data.forEach((bar, idx) => {
+          ctx.save();
+          ctx.font = '600 12px -apple-system, sans-serif';
+          ctx.fillStyle = '#1B2430';
+          ctx.textAlign = 'center';
+          ctx.fillText(ds.data[idx], bar.x, bar.y - 8);
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+  const ctx = document.getElementById('genChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['12am','3am','6am','9am','11am','1pm','3pm','5pm','7pm','9pm','11pm'],
+      datasets: [
+        {label:'Generation (kW)', data:[0,0,0,46.4,13.31,13.19,29.95,17.75,0,0,0], borderColor:'#E8A33D', backgroundColor:'rgba(232,163,61,0.12)', fill:true, tension:0.3, pointRadius:0, borderWidth:2.5},
+        {label:'Demand (kW)', data:[62.68,59.67,62.10,83.90,71.74,62.04,58.38,67.99,90.38,87.91,66.17], borderColor:'#0F1E33', backgroundColor:'transparent', tension:0.3, pointRadius:0, borderWidth:2.5}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:10, bottom:2, left:2, right:8}},
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{
+          ticks:{font:{size:11}, padding:6, color:'#5C6B7A'},
+          grid:{color:'#EEEBE3'},
+          title:{display:true, text:'Power (kW)', font:{size:11, weight:'600'}, color:'#5C6B7A'}
+        },
+        x:{
+          ticks:{font:{size:10.5}, maxRotation:0, autoSkip:true, maxTicksLimit:6, color:'#5C6B7A'},
+          grid:{display:false}
+        }
+      }
+    }
+  });
+
+  const ctx2 = document.getElementById('scenChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['No system', 'Shedding only', 'Full system'],
+      datasets: [{
+        label: 'Avg shortfall hrs/day',
+        data: [8.03, 3.64, 0.43],
+        backgroundColor: ['#C0432F', '#E8A33D', '#2E7D4F'],
+        borderRadius: 5,
+        maxBarThickness: 70
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:22}},
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{
+          ticks:{font:{size:11}, padding:6, color:'#5C6B7A'},
+          grid:{color:'#EEEBE3'},
+          beginAtZero:true, max:9,
+          title:{display:true, text:'Shortfall hrs/day', font:{size:11, weight:'600'}, color:'#5C6B7A'}
+        },
+        x:{
+          ticks:{font:{size:11}, color:'#5C6B7A'},
+          grid:{display:false}
+        }
+      }
+    },
+    plugins: [valueLabel]
+  });
+
+  // Last-updated timestamp
+  document.getElementById('updatedTs').textContent =
+    'Last updated: ' + new Date().toLocaleString('en-IN', {dateStyle:'medium', timeStyle:'short'});
+
+  // Click-to-expand feeder tiles
+  const feederData = {
+    1: {hrs:'0.33 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'},
+    2: {hrs:'0.37 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'},
+    3: {hrs:'0.60 hrs', status:'Shortfall detected', statusClass:'', dotColor:'#C0432F',
+        cause:'Weather-driven dip (Sep 6, 11:00 AM)',
+        why:'Generation fell to 13.3 kW against 71.7 kW demand, an 81% drop during a daylight solar window — consistent with cloud cover rather than an equipment fault, which instead shows generation falling to 0 kW.',
+        action:'Dispatch shared battery — cover 30% of peak demand for 3 hours'},
+    4: {hrs:'0.37 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'},
+    5: {hrs:'0.47 hrs', status:'Normal', statusClass:'', dotColor:'#2E7D4F',
+        cause:'No active shortfall', why:'Generation tracking expected output; no deviation flagged in the last hour.',
+        action:'No action needed — system monitoring continues.'}
+  };
+
+  function selectFeeder(id) {
+    const d = feederData[id];
+    document.getElementById('statusLabel').textContent = 'Feeder ' + id + ' status';
+    document.getElementById('statusValue').textContent = d.status;
+    document.getElementById('statusDot').style.background = d.dotColor;
+    document.getElementById('causeValue').textContent = d.cause;
+    document.getElementById('whyBox').innerHTML = '<b>Why the system thinks this:</b> ' + d.why;
+    document.getElementById('actionValue').textContent = d.action;
+    document.querySelectorAll('.feeder-tile').forEach(t => t.style.outline = 'none');
+    document.querySelectorAll('.feeder-tile')[id-1].style.outline = '2px solid ' + d.dotColor;
+  }
+</script>
+
+</body>
+</html>
