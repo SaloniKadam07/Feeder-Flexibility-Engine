@@ -20,6 +20,7 @@ A connected pipeline: simulated feeder data → advance-warning forecast → ano
 - **Honest limitation:** critical-load shortfalls are not yet evenly distributed across feeders (Feeder 5 saw ~2.6x more unserved critical load than Feeder 1) — a planned refinement for the prototype phase
 
 ## Repository Structure
+```text
 feeder-flexibility-engine/
 ├── track-a-simulation/          # Data generation, detection, dispatch, metrics (Person A)
 │   ├── 01_dataset_generator.py
@@ -37,7 +38,7 @@ feeder-flexibility-engine/
     ├── data-model-design.md       # Dataset schema and classification logic
     ├── system-architecture.md     # Architecture explained in text
     └── solution-summary.md        # One-page summary of results
-
+```
 ## How to Run
 
 ### Track A (simulation)
