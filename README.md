@@ -4,6 +4,8 @@
 
 A software system that forecasts and detects renewable-generation shortfalls at the feeder level, classifies their cause, prioritises critical loads, dispatches a shared community battery, and alerts the DISCOM with a recommended action — built for a 5-feeder, 50-household neighbourhood network.
 
+**New to this project?** See [PROJECT_EXPLANATION.md](PROJECT_EXPLANATION.md) for a plain-language walkthrough of what we built and why.
+
 **Live dashboard demo:** https://feeder-flexibility-engine-fc0776.netlify.app
 
 ## The Problem
