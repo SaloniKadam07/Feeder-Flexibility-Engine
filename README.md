@@ -21,22 +21,22 @@ A connected pipeline: simulated feeder data → advance-warning forecast → ano
 
 ## Repository Structure
 feeder-flexibility-engine/
-├── track-a-simulation/ # Data generation, detection, dispatch, metrics (Person A)
-│ ├── 01_dataset_generator.py
-│ ├── 02_anomaly_classifier.py
-│ ├── 03_dispatch_and_metrics.py
-│ ├── 04_generate_plots.py
-│ ├── 05_enhancements.py # Forecasting, 3-scenario comparison, equity check
-│ ├── data/
-│ └── figures/
-└── track-b-dashboard/ # DISCOM dashboard, economics, diagrams, docs (Person B)
-├── dashboard/
-├── economics/ # unit_economics.xlsx — includes sensitivity analysis
-├── diagrams/ # architecture_diagram.png
-├── om-model.md # Ownership, operations & maintenance model
-├── data-model-design.md # Dataset schema and classification logic
-├── system-architecture.md # Architecture explained in text
-└── solution-summary.md # One-page summary of results
+├── track-a-simulation/          # Data generation, detection, dispatch, metrics (Person A)
+│   ├── 01_dataset_generator.py
+│   ├── 02_anomaly_classifier.py
+│   ├── 03_dispatch_and_metrics.py
+│   ├── 04_generate_plots.py
+│   ├── 05_enhancements.py       # Forecasting, 3-scenario comparison, equity check
+│   ├── data/
+│   └── figures/
+└── track-b-dashboard/           # DISCOM dashboard, economics, diagrams, docs (Person B)
+    ├── dashboard/
+    ├── economics/                # unit_economics.xlsx — includes sensitivity analysis
+    ├── diagrams/                 # architecture_diagram.png
+    ├── om-model.md                # Ownership, operations & maintenance model
+    ├── data-model-design.md       # Dataset schema and classification logic
+    ├── system-architecture.md     # Architecture explained in text
+    └── solution-summary.md        # One-page summary of results
 
 ## How to Run
 
